@@ -22,9 +22,11 @@ class Camera:
 
     def update_model(self):
         _, frame = self.webcam_instance.read() # Get frame from camera
-        self.gaze.refresh(frame) # Scan for gaze detection data
-
-        current_measurement = bool(self.gaze.is_center()) # Detect whether user is looking at this camera
+        try:
+            self.gaze.refresh(frame) # Scan for gaze detection data
+            current_measurement = bool(self.gaze.is_center())  # Detect whether user is looking at this camera
+        except:
+            current_measurement = False
 
         # Adjust current list of measurements to get average measurements
         self.measurements.append(current_measurement)
