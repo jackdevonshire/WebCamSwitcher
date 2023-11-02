@@ -5,21 +5,22 @@ import pyvirtualcam
 
 from Camera import Camera
 
-### Config ###
+### Configuration ###
+config = {
+    # General Setup
+    "webcam_ids": [0, 1], # The device id's of all webcams the system can access
+    "measurement_range": 25, # Amount of measurements used to determine which camera to select
+    "cooldown_seconds": 2, # After switching camera, block switching cameras for x seconds
 
-# General Setup
-webcam_ids = [0, 1]  # Device ids of all webcams
-measurement_range = 25  # Amount of measurements to base camera switching decisions off of
-cooldown_seconds = 2  # For these seconds after switching, the camera will not switch again regardless of detections
+    # Webcam Weightings
+    "favourite_webcam_id": 1, # A webcam you want to favour over others. e.g. your central screen
+    "favourite_webcam_weighting": 2, # The factor by which to multiply the readings from the favourite webcam
 
-# Webcam Weightings
-favourite_webcam_id = 1  # Allows you to pick a webcam to favour
-favourite_webcam_weighting = 2  # The multiplication factor by which to favour the favourite webcam
-
-# Virtual Camera Output
-virtual_cam_width = 1080
-virtual_cam_height = 1080
-virtual_cam_fps = 60
+    # Virtual Camera Output
+    "virtual_cam_width": 1080,
+    "virtual_cam_height": 1080,
+    "virtual_cam_fps": 60
+}
 
 ### Main Program ###
 
@@ -32,17 +33,17 @@ def cooldown_timer():
     global can_switch_cameras
 
     can_switch_cameras = False
-    time.sleep(cooldown_seconds)
+    time.sleep(config["cooldown_seconds"])
     can_switch_cameras = True
 
 
 # Initialise all webcams
 webcams = []
-for webcamId in webcam_ids:
-    if webcamId == favourite_webcam_id:
-        camera = Camera("", webcamId, measurement_range, favourite_webcam_weighting)
+for webcamId in config["webcam_ids"]:
+    if webcamId == config["favourite_webcam_id"]:
+        camera = Camera("", webcamId, config["measurement_range"], config["favourite_webcam_weighting"])
     else:
-        camera = Camera("", webcamId, measurement_range, 1)
+        camera = Camera("", webcamId, config["measurement_range"], 1)
 
     webcams.append(camera)
 
@@ -50,7 +51,7 @@ last_best_webcam = webcams[0]
 current_best_webcam = webcams[0]
 
 # Now load virtual webcam and initialise main program loop
-with pyvirtualcam.Camera(width=virtual_cam_width, height=virtual_cam_height, fps=virtual_cam_fps) as virtual_cam:
+with pyvirtualcam.Camera(width=config["virtual_cam_width"], height=config["virtual_cam_height"], fps=config["virtual_cam_fps"]) as virtual_cam:
     while True:
         best_detections = 0
         best_frame = None
@@ -75,7 +76,7 @@ with pyvirtualcam.Camera(width=virtual_cam_width, height=virtual_cam_height, fps
 
         # Format best frame for virtual camera
         virtual_frame = best_frame
-        virtual_frame = cv2.resize(virtual_frame, (virtual_cam_width, virtual_cam_height))
+        virtual_frame = cv2.resize(virtual_frame, (config["virtual_cam_width"], config["virtual_cam_height"]))
         virtual_frame = cv2.cvtColor(virtual_frame, cv2.COLOR_RGB2BGR)  # Convert frame colour for virtual webcam
 
         # Send frame to virtual camera
