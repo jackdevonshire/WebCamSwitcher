@@ -1,77 +1,46 @@
 import cv2
-import pyvirtualcam as pyvirtualcam
-from gaze_tracking import GazeTracking
+import pyvirtualcam
 
-global CurrentlyScanning
-global CurrentlyLive
+from Camera import Camera
 
-gaze = GazeTracking()
+### Config ###
 
-#########################################
-CurrentlyScanning = "left"
-CurrentlyLive = "center"
+webcamIds = [0, 1]  # Device ids of all webcams
+measurement_range = 25  # Amount of measurements to base camera switching decisions off of
 
-webcams = {
-    "left": cv2.VideoCapture(0),
-    "center": cv2.VideoCapture(1)
-}
+virtual_cam_width = 640
+virtual_cam_height = 480
+virtual_cam_fps = 60
 
-# The percentage of measurements within 0 to tick_range that need detect face looking at it, required to switch cameras
-accuracy = 0.8
-tick_range = 20
-#########################################
-measurements = [False] * tick_range
+### Main Program ###
 
-# Initialising Webcam Selection
-scanning_webcam = webcams[CurrentlyScanning]
-live_webcam = webcams[CurrentlyLive]
+# First initialise all webcams
+webcams = []
+for webcamId in webcamIds:
+    camera = Camera("", webcamId, measurement_range)
+    webcams.append(camera)
 
-# Starting virtual camera
-width = int(live_webcam.get(cv2.CAP_PROP_FRAME_WIDTH))
-height = int(live_webcam.get(cv2.CAP_PROP_FRAME_HEIGHT))
-with pyvirtualcam.Camera(width=width, height=height, fps=60) as virtual_cam:
+best_webcam = webcams[0]
+# Now load virtual webcam and initialise main program loop
+with pyvirtualcam.Camera(width=virtual_cam_width, height=virtual_cam_height, fps=virtual_cam_fps) as virtual_cam:
     while True:
-        # Webcam selection
-        scanning_webcam = webcams[CurrentlyScanning]
-        live_webcam = webcams[CurrentlyLive]
+        best_detections = 0
+        best_frame = None
 
-        # Get frames from the live and scanning webcam
-        _, scanning_frame = scanning_webcam.read()
-        _, live_frame = live_webcam.read()
+        # Select the best frame based on the webcam with the most positive detections for given measurement range
+        for webcam in webcams:
+            current_detections = webcam.update_model()
 
-        # Detect gaze using GazeTracking module
-        gaze.refresh(scanning_frame)
+            if current_detections > best_detections:
+                best_detections = current_detections
+                best_webcam = webcam
 
+        best_frame = best_webcam.get_last_frame()
 
-        if gaze.is_center():
-            # If the average of the last positive detection measurements (looking at scanning camera) meets the
-            # accuracy threshold
-            average_positive_detections = sum(measurements) / tick_range
+        # Format best frame for virtual camera
+        virtual_frame = best_frame
+        virtual_frame = cv2.resize(virtual_frame, (virtual_cam_width, virtual_cam_height))
+        virtual_frame = cv2.cvtColor(virtual_frame, cv2.COLOR_RGB2BGR)  # Convert frame colour for virtual webcam
 
-            if average_positive_detections >= accuracy:
-                # Reset looking at camera count
-                looking_at_camera_count = 0
-
-                # Switch scanning and live cameras based on which camera has detected gaze looking at it
-                if CurrentlyScanning == "center":
-                    CurrentlyScanning = "left"
-                    CurrentlyLive = "center"
-                elif CurrentlyScanning == "left":
-                    CurrentlyScanning = "center"
-                    CurrentlyLive = "left"
-
-            measurements.append(True)
-        else:
-            measurements.append(False)
-
-        # Only want the last x measurements (between 0 and tick_range)
-        if len(measurements) > tick_range:
-            measurements.pop(0)
-
-        # Pipe frames through to virtual camera
-        virtual_frame = cv2.resize(live_frame, (width, height))
-        virtual_frame = cv2.cvtColor(virtual_frame, cv2.COLOR_RGB2BGR)  # Convert if needed
-        virtual_cam.send(virtual_frame)
-
-        if cv2.waitKey(1) == 27:
-            break
+        # Send frame to virtual camera
+        virtual_cam.send(best_frame)
