@@ -64,7 +64,6 @@ def main():
     # Initialise all webcams
     webcams = initialise_webcams()
 
-    last_best_webcam = webcams[0]
     current_best_webcam = webcams[0]
 
     # Now load virtual webcam and initialise main program loop
@@ -79,16 +78,14 @@ def main():
                     current_detections = webcam.update_model()
 
                     if current_detections > best_detections:
+                        # If we're going to switch webcams, start a cooldown timer before switching again
+                        if current_best_webcam != webcam:
+                            threading.Thread(target=cooldown_timer).start()
+
                         best_detections = current_detections
                         current_best_webcam = webcam
             else:
                 current_best_webcam.update_model()
-
-            # If switching between webcams, add a cooldown before we can switch again
-            if last_best_webcam != current_best_webcam:
-                threading.Thread(target=cooldown_timer).start()
-
-            last_best_webcam = current_best_webcam
 
             best_frame = current_best_webcam.get_last_frame()
             update_virtual_camera(virtual_cam, best_frame)
