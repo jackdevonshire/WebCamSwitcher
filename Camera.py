@@ -14,9 +14,8 @@ class Camera:
     def get_frame(self):
         _, frame = self.webcam_instance.read() # Get frame from camera
         self.gaze.refresh(frame) # Scan for gaze detection data
-        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR) # Convert frame colour for virtual webcam
 
-        current_measurement = self.gaze.is_center() # Detect whether user is looking at this camera
+        current_measurement = bool(self.gaze.is_center()) # Detect whether user is looking at this camera
 
         # Adjust current list of measurements to get average measurements
         self.measurements.append(current_measurement)
@@ -25,7 +24,7 @@ class Camera:
 
         return frame
 
-    def get_average_measurements(self):
-        return self.measurements / self.measurement_range
+    def get_positive_detections(self):
+        return sum(self.measurements)
 
 
