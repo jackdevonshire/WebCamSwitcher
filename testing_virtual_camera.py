@@ -4,7 +4,9 @@ from gaze_tracking import GazeTracking
 gaze = GazeTracking()
 
 global CurrentlyScanning
-CurrentlyScanning = "center"
+global CurrentlyLive
+CurrentlyScanning = "left"
+CurrentlyLive = "center"
 
 webcams = {
     "left": cv2.VideoCapture(0),
@@ -16,37 +18,42 @@ sensitivity = 20
 
 looking_at_camera_count = 0
 while True:
-    webcam = webcams[CurrentlyScanning]
-    _, frame = webcam.read()
-    gaze.refresh(frame)
+    # Webcam selection
+    scanning_webcam = webcams[CurrentlyScanning]
+    live_webcam = webcams[CurrentlyLive]
 
-    new_frame = gaze.annotated_frame()
-    text = ""
+    # Get frames from the live and scanning webcam
+    _, scanning_frame = scanning_webcam.read()
+    _, live_frame = live_webcam.read()
+
+    # Detect gaze using GazeTracking module
+    gaze.refresh(scanning_frame)
 
     if gaze.is_center():
         looking_at_camera_count += 1
 
+        # If continuously looked at scanning camera for x period of time,
+        # switch that to be the live camera
         if looking_at_camera_count > sensitivity:
             # Reset looking at camera count
             looking_at_camera_count = 0
 
             print("Detected looking at current camera")
 
-            # Switch the webcam we are scanning
+            # Switch scanning and live cameras based on which camera has detected gaze looking at it
             if CurrentlyScanning == "center":
                 CurrentlyScanning = "left"
-            else:
+                CurrentlyLive = "center"
+            elif CurrentlyScanning == "left":
                 CurrentlyScanning = "center"
+                CurrentlyLive = "left"
 
-            # Switch the OBS scene
-            #
-            #
-            #
     else:
         looking_center_count = 0
 
-    cv2.putText(new_frame, text, (60, 60), cv2.FONT_HERSHEY_DUPLEX, 2, (255, 0, 0), 2)
-    cv2.imshow("Demo", new_frame)
+    # Pipe live camera frames
+    cv2.putText(live_frame, "", (60, 60), cv2.FONT_HERSHEY_DUPLEX, 2, (255, 0, 0), 2)
+    cv2.imshow("Demo", live_frame)
 
     if cv2.waitKey(1) == 27:
         break
