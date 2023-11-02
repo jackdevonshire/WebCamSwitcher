@@ -6,7 +6,7 @@ from Camera import Camera
 ### Config ###
 
 webcamIds = [0, 1]  # Device ids of all webcams
-measurement_range = 15  # Amount of measurements to base camera switching decisions off of
+measurement_range = 25  # Amount of measurements to base camera switching decisions off of
 
 virtual_cam_width = 640
 virtual_cam_height = 480
