@@ -3,7 +3,7 @@ from gaze_tracking import GazeTracking
 
 
 class Camera:
-    def __init__(self, label, device_id, measurement_range):
+    def __init__(self, label, device_id, measurement_range, additional_weighting):
         self.label = label
         self.webcam_instance = cv2.VideoCapture(device_id)
         self.gaze = GazeTracking()
@@ -11,8 +11,10 @@ class Camera:
         self.measurement_range = measurement_range
         self.measurements = [False]*measurement_range
 
+        self.additional_weighting = additional_weighting
+
         # Startup to ensure camera has a frame available
-        self.l__ast_frame = None
+        self.last_frame = None
         self.update_model()
 
     def get_last_frame(self):
@@ -31,6 +33,6 @@ class Camera:
 
         self.last_frame = frame
 
-        return sum(self.measurements)
+        return sum(self.measurements) * self.additional_weighting
 
 

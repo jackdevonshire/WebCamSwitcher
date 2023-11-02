@@ -7,10 +7,16 @@ from Camera import Camera
 
 ### Config ###
 
-webcamIds = [0, 1]  # Device ids of all webcams
+# General Setup
+webcam_ids = [0, 1]  # Device ids of all webcams
 measurement_range = 25  # Amount of measurements to base camera switching decisions off of
 cooldown_seconds = 2  # For these seconds after switching, the camera will not switch again regardless of detections
 
+# Webcam Weightings
+favourite_webcam_id = 0  # Allows you to pick a webcam to favour
+favourite_webcam_weighting = 5  # The multiplication factor by which to favour the favourite webcam
+
+# Virtual Camera Output
 virtual_cam_width = 1080
 virtual_cam_height = 1080
 virtual_cam_fps = 60
@@ -19,6 +25,7 @@ virtual_cam_fps = 60
 
 global can_switch_cameras
 can_switch_cameras = True
+
 
 # This function allows for a cooldown timer between switching cameras
 def cooldown_timer():
@@ -31,8 +38,12 @@ def cooldown_timer():
 
 # Initialise all webcams
 webcams = []
-for webcamId in webcamIds:
-    camera = Camera("", webcamId, measurement_range)
+for webcamId in webcam_ids:
+    if webcamId == favourite_webcam_id:
+        camera = Camera("", webcamId, measurement_range, favourite_webcam_weighting)
+    else:
+        camera = Camera("", webcamId, measurement_range, 1)
+
     webcams.append(camera)
 
 last_best_webcam = webcams[0]
