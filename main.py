@@ -47,13 +47,10 @@ with pyvirtualcam.Camera(width=width, height=height, fps=60) as virtual_cam:
             # If the average of the last positive detection measurements (looking at scanning camera) meets the
             # accuracy threshold
             average_positive_detections = sum(measurements) / tick_range
-            print(average_positive_detections)
 
             if average_positive_detections >= accuracy:
                 # Reset looking at camera count
                 looking_at_camera_count = 0
-
-                print("Detected looking at current camera")
 
                 # Switch scanning and live cameras based on which camera has detected gaze looking at it
                 if CurrentlyScanning == "center":
