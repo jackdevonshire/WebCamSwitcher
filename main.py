@@ -8,13 +8,13 @@ from Camera import Camera
 ### Configuration ###
 config = {
     # General Setup
-    "webcam_ids": [0, 1], # The device id's of all webcams the system can access
-    "measurement_range": 25, # Amount of measurements used to determine which camera to select
-    "cooldown_seconds": 2, # After switching camera, block switching cameras for x seconds
+    "webcam_ids": [0, 1],  # The device id's of all webcams the system can access
+    "measurement_range": 25,  # Amount of measurements used to determine which camera to select
+    "cooldown_seconds": 2,  # After switching camera, block switching cameras for x seconds
 
     # Webcam Weightings
-    "favourite_webcam_id": 1, # A webcam you want to favour over others. e.g. your central screen
-    "favourite_webcam_weighting": 2, # The factor by which to multiply the readings from the favourite webcam
+    "favourite_webcam_id": 1,  # A webcam you want to favour over others. e.g. your central screen
+    "favourite_webcam_weighting": 2,  # The factor by which to multiply the readings from the favourite webcam
 
     # Virtual Camera Output
     "virtual_cam_width": 1080,
@@ -37,8 +37,7 @@ def cooldown_timer():
     can_switch_cameras = True
 
 
-def main():
-    # Initialise all webcams
+def initialise_webcams():
     webcams = []
     for webcamId in config["webcam_ids"]:
         if webcamId == config["favourite_webcam_id"]:
@@ -46,7 +45,12 @@ def main():
         else:
             camera = Camera("", webcamId, config["measurement_range"], 1)
 
-        webcams.append(camera)
+    return webcams
+
+
+def main():
+    # Initialise all webcams
+    webcams = initialise_webcams()
 
     last_best_webcam = webcams[0]
     current_best_webcam = webcams[0]
@@ -83,6 +87,7 @@ def main():
 
             # Send frame to virtual camera
             virtual_cam.send(virtual_frame)
+
 
 if __name__ == "__main__":
     main()
