@@ -6,17 +6,17 @@ gaze = GazeTracking()
 global CurrentlyScanning
 CurrentlyScanning = "center"
 
-webcam_ids = {
-    "left": 0,
-    "center": 1
+webcams = {
+    "left": cv2.VideoCapture(0),
+    "center": cv2.VideoCapture(1)
 }
 
 # The higher this is, the more precise gaze detection will be, but it will be slower to switch cameras
 sensitivity = 20
 
 looking_at_camera_count = 0
-webcam = cv2.VideoCapture(webcam_ids[CurrentlyScanning])
 while True:
+    webcam = webcams[CurrentlyScanning]
     _, frame = webcam.read()
     gaze.refresh(frame)
 
@@ -31,15 +31,11 @@ while True:
             looking_at_camera_count = 0
 
             print("Detected looking at current camera")
-            # Release the current webcam being scanned
-            webcam.release()
 
             # Switch the webcam we are scanning
             if CurrentlyScanning == "center":
-                webcam = cv2.VideoCapture(webcam_ids["left"])
                 CurrentlyScanning = "left"
             else:
-                webcam = cv2.VideoCapture(webcam_ids["center"])
                 CurrentlyScanning = "center"
 
             # Switch the OBS scene
