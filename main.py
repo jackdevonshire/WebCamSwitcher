@@ -42,10 +42,22 @@ def initialise_webcams():
     for webcamId in config["webcam_ids"]:
         if webcamId == config["favourite_webcam_id"]:
             camera = Camera("", webcamId, config["measurement_range"], config["favourite_webcam_weighting"])
+            webcams.append(camera)
         else:
             camera = Camera("", webcamId, config["measurement_range"], 1)
+            webcams.append(camera)
 
     return webcams
+
+
+def update_virtual_camera(virtual_cam, best_frame):
+    # Format best frame for virtual camera
+    virtual_frame = best_frame
+    virtual_frame = cv2.resize(virtual_frame, (config["virtual_cam_width"], config["virtual_cam_height"]))
+    virtual_frame = cv2.cvtColor(virtual_frame, cv2.COLOR_RGB2BGR)  # Convert frame colour for virtual webcam
+
+    # Send frame to virtual camera
+    virtual_cam.send(virtual_frame)
 
 
 def main():
@@ -60,7 +72,6 @@ def main():
                              fps=config["virtual_cam_fps"]) as virtual_cam:
         while True:
             best_detections = 0
-            best_frame = None
 
             if can_switch_cameras:
                 # Select the best frame based on the webcam with the most positive detections for given measurement range
@@ -77,16 +88,10 @@ def main():
             if last_best_webcam != current_best_webcam:
                 threading.Thread(target=cooldown_timer).start()
 
-            best_frame = current_best_webcam.get_last_frame()
             last_best_webcam = current_best_webcam
 
-            # Format best frame for virtual camera
-            virtual_frame = best_frame
-            virtual_frame = cv2.resize(virtual_frame, (config["virtual_cam_width"], config["virtual_cam_height"]))
-            virtual_frame = cv2.cvtColor(virtual_frame, cv2.COLOR_RGB2BGR)  # Convert frame colour for virtual webcam
-
-            # Send frame to virtual camera
-            virtual_cam.send(virtual_frame)
+            best_frame = current_best_webcam.get_last_frame()
+            update_virtual_camera(virtual_cam, best_frame)
 
 
 if __name__ == "__main__":
