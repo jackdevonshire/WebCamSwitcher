@@ -1,6 +1,7 @@
 import cv2
 import pyvirtualcam as pyvirtualcam
 from gaze_tracking import GazeTracking
+
 global CurrentlyScanning
 global CurrentlyLive
 
@@ -15,8 +16,11 @@ webcams = {
     "center": cv2.VideoCapture(1)
 }
 
-sensitivity = 10 # Higher = More Precise, Slower Switching. Vice versa.
+# The percentage of measurements within 0 to tick_range that need detect face looking at it, required to switch cameras
+accuracy = 0.8
+tick_range = 20
 #########################################
+measurements = [False] * tick_range
 
 # Initialising Webcam Selection
 scanning_webcam = webcams[CurrentlyScanning]
@@ -26,7 +30,6 @@ live_webcam = webcams[CurrentlyLive]
 width = int(live_webcam.get(cv2.CAP_PROP_FRAME_WIDTH))
 height = int(live_webcam.get(cv2.CAP_PROP_FRAME_HEIGHT))
 with pyvirtualcam.Camera(width=width, height=height, fps=60) as virtual_cam:
-    looking_at_camera_count = 0
     while True:
         # Webcam selection
         scanning_webcam = webcams[CurrentlyScanning]
@@ -39,12 +42,14 @@ with pyvirtualcam.Camera(width=width, height=height, fps=60) as virtual_cam:
         # Detect gaze using GazeTracking module
         gaze.refresh(scanning_frame)
 
-        if gaze.is_center():
-            looking_at_camera_count += 1
 
-            # If continuously looked at scanning camera for x period of time,
-            # switch that to be the live camera
-            if looking_at_camera_count > sensitivity:
+        if gaze.is_center():
+            # If the average of the last positive detection measurements (looking at scanning camera) meets the
+            # accuracy threshold
+            average_positive_detections = sum(measurements) / tick_range
+            print(average_positive_detections)
+
+            if average_positive_detections >= accuracy:
                 # Reset looking at camera count
                 looking_at_camera_count = 0
 
@@ -58,8 +63,13 @@ with pyvirtualcam.Camera(width=width, height=height, fps=60) as virtual_cam:
                     CurrentlyScanning = "center"
                     CurrentlyLive = "left"
 
+            measurements.append(True)
         else:
-            looking_center_count = 0
+            measurements.append(False)
+
+        # Only want the last x measurements (between 0 and tick_range)
+        if len(measurements) > tick_range:
+            measurements.pop(0)
 
         # Pipe frames through to virtual camera
         virtual_frame = cv2.resize(live_frame, (width, height))
