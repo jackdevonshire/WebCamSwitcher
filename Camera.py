@@ -11,7 +11,14 @@ class Camera:
         self.measurement_range = measurement_range
         self.measurements = [False]*measurement_range
 
-    def get_frame(self):
+        # Startup to ensure camera has a frame available
+        self.l__ast_frame = None
+        self.update_model()
+
+    def get_last_frame(self):
+        return self.last_frame
+
+    def update_model(self):
         _, frame = self.webcam_instance.read() # Get frame from camera
         self.gaze.refresh(frame) # Scan for gaze detection data
 
@@ -22,9 +29,8 @@ class Camera:
         if len(self.measurements) > self.measurement_range:
             self.measurements.pop(0)
 
-        return frame
+        self.last_frame = frame
 
-    def get_positive_detections(self):
         return sum(self.measurements)
 
 

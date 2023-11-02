@@ -20,6 +20,7 @@ for webcamId in webcamIds:
     camera = Camera("", webcamId, measurement_range)
     webcams.append(camera)
 
+best_webcam = webcams[0]
 # Now load virtual webcam and initialise main program loop
 with pyvirtualcam.Camera(width=virtual_cam_width, height=virtual_cam_height, fps=virtual_cam_fps) as virtual_cam:
     while True:
@@ -28,16 +29,13 @@ with pyvirtualcam.Camera(width=virtual_cam_width, height=virtual_cam_height, fps
 
         # Select the best frame based on the webcam with the most positive detections for given measurement range
         for webcam in webcams:
-            current_frame = webcam.get_frame()
-            current_detections = webcam.get_positive_detections()
+            current_detections = webcam.update_model()
 
             if current_detections > best_detections:
                 best_detections = current_detections
-                best_frame = current_frame
+                best_webcam = webcam
 
-        # When first running the program, each cameras detections are defaulted to a list of false values
-        if best_frame is None:
-            continue
+        best_frame = best_webcam.get_last_frame()
 
         # Format best frame for virtual camera
         virtual_frame = best_frame
