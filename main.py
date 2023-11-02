@@ -10,7 +10,7 @@ config = {
     # General Setup
     "webcam_ids": [0, 1],  # The device id's of all webcams the system can access
     "measurement_range": 25,  # Amount of measurements used to determine which camera to select
-    "cooldown_seconds": 2,  # After switching camera, block switching cameras for x seconds
+    "cooldown_seconds": 3,  # After switching camera, block switching cameras for x seconds
 
     # Webcam Weightings
     "favourite_webcam_id": 1,  # A webcam you want to favour over others. e.g. your central screen
@@ -71,6 +71,7 @@ def main():
                              fps=config["virtual_cam_fps"]) as virtual_cam:
         while True:
             best_detections = 0
+            start_cooldown = False
 
             if can_switch_cameras:
                 # Select the best frame based on the webcam with the most positive detections for given measurement range
@@ -80,7 +81,7 @@ def main():
                     if current_detections > best_detections:
                         # If we're going to switch webcams, start a cooldown timer before switching again
                         if current_best_webcam != webcam:
-                            threading.Thread(target=cooldown_timer).start()
+                            start_cooldown = True
 
                         best_detections = current_detections
                         current_best_webcam = webcam
@@ -89,6 +90,9 @@ def main():
 
             best_frame = current_best_webcam.get_last_frame()
             update_virtual_camera(virtual_cam, best_frame)
+
+            if start_cooldown:
+                threading.Thread(target=cooldown_timer).start()
 
 
 if __name__ == "__main__":
