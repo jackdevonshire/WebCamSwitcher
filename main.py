@@ -8,8 +8,8 @@ from Camera import Camera
 webcamIds = [0, 1]  # Device ids of all webcams
 measurement_range = 25  # Amount of measurements to base camera switching decisions off of
 
-virtual_cam_width = 640
-virtual_cam_height = 480
+virtual_cam_width = 1080
+virtual_cam_height = 1080
 virtual_cam_fps = 60
 
 ### Main Program ###
@@ -43,4 +43,4 @@ with pyvirtualcam.Camera(width=virtual_cam_width, height=virtual_cam_height, fps
         virtual_frame = cv2.cvtColor(virtual_frame, cv2.COLOR_RGB2BGR)  # Convert frame colour for virtual webcam
 
         # Send frame to virtual camera
-        virtual_cam.send(best_frame)
+        virtual_cam.send(virtual_frame)
