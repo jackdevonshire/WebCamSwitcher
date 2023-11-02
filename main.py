@@ -1,56 +1,70 @@
 import cv2
+import pyvirtualcam as pyvirtualcam
 from gaze_tracking import GazeTracking
+global CurrentlyScanning
+global CurrentlyLive
 
 gaze = GazeTracking()
 
-global CurrentlyScanning
-CurrentlyScanning = "center"
+#########################################
+CurrentlyScanning = "left"
+CurrentlyLive = "center"
 
-webcam_ids = {
-    "left": 0,
-    "center": 1
+webcams = {
+    "left": cv2.VideoCapture(0),
+    "center": cv2.VideoCapture(1)
 }
 
-# The higher this is, the more precise gaze detection will be, but it will be slower to switch cameras
-sensitivity = 20
+sensitivity = 10 # Higher = More Precise, Slower Switching. Vice versa.
+#########################################
 
-looking_at_camera_count = 0
-webcam = cv2.VideoCapture(webcam_ids[CurrentlyScanning])
-while True:
-    _, frame = webcam.read()
-    gaze.refresh(frame)
+# Initialising Webcam Selection
+scanning_webcam = webcams[CurrentlyScanning]
+live_webcam = webcams[CurrentlyLive]
 
-    new_frame = gaze.annotated_frame()
-    text = ""
+# Starting virtual camera
+width = int(live_webcam.get(cv2.CAP_PROP_FRAME_WIDTH))
+height = int(live_webcam.get(cv2.CAP_PROP_FRAME_HEIGHT))
+with pyvirtualcam.Camera(width=width, height=height, fps=60) as virtual_cam:
+    looking_at_camera_count = 0
+    while True:
+        # Webcam selection
+        scanning_webcam = webcams[CurrentlyScanning]
+        live_webcam = webcams[CurrentlyLive]
 
-    if gaze.is_center():
-        looking_at_camera_count += 1
+        # Get frames from the live and scanning webcam
+        _, scanning_frame = scanning_webcam.read()
+        _, live_frame = live_webcam.read()
 
-        if looking_at_camera_count > sensitivity:
-            # Reset looking at camera count
-            looking_at_camera_count = 0
+        # Detect gaze using GazeTracking module
+        gaze.refresh(scanning_frame)
 
-            print("Detected looking at current camera")
-            # Release the current webcam being scanned
-            webcam.release()
+        if gaze.is_center():
+            looking_at_camera_count += 1
 
-            # Switch the webcam we are scanning
-            if CurrentlyScanning == "center":
-                webcam = cv2.VideoCapture(webcam_ids["left"])
-                CurrentlyScanning = "left"
-            else:
-                webcam = cv2.VideoCapture(webcam_ids["center"])
-                CurrentlyScanning = "center"
+            # If continuously looked at scanning camera for x period of time,
+            # switch that to be the live camera
+            if looking_at_camera_count > sensitivity:
+                # Reset looking at camera count
+                looking_at_camera_count = 0
 
-            # Switch the OBS scene
-            #
-            #
-            #
-    else:
-        looking_center_count = 0
+                print("Detected looking at current camera")
 
-    cv2.putText(new_frame, text, (60, 60), cv2.FONT_HERSHEY_DUPLEX, 2, (255, 0, 0), 2)
-    cv2.imshow("Demo", new_frame)
+                # Switch scanning and live cameras based on which camera has detected gaze looking at it
+                if CurrentlyScanning == "center":
+                    CurrentlyScanning = "left"
+                    CurrentlyLive = "center"
+                elif CurrentlyScanning == "left":
+                    CurrentlyScanning = "center"
+                    CurrentlyLive = "left"
 
-    if cv2.waitKey(1) == 27:
-        break
+        else:
+            looking_center_count = 0
+
+        # Pipe frames through to virtual camera
+        virtual_frame = cv2.resize(live_frame, (width, height))
+        virtual_frame = cv2.cvtColor(virtual_frame, cv2.COLOR_RGB2BGR)  # Convert if needed
+        virtual_cam.send(virtual_frame)
+
+        if cv2.waitKey(1) == 27:
+            break
