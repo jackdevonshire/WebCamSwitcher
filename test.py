@@ -5,8 +5,8 @@ from Camera import Camera
 
 ### Config ###
 
-webcamIds = [0, 1] # Device ids of all webcams
-measurement_range = 15 # Amount of measurements to base camera switching decisions off of
+webcamIds = [0, 1]  # Device ids of all webcams
+measurement_range = 15  # Amount of measurements to base camera switching decisions off of
 
 virtual_cam_width = 640
 virtual_cam_height = 480
@@ -35,10 +35,14 @@ with pyvirtualcam.Camera(width=virtual_cam_width, height=virtual_cam_height, fps
                 best_detections = current_detections
                 best_frame = current_frame
 
+        # When first running the program, each cameras detections are defaulted to a list of false values
+        if best_frame is None:
+            continue
+
         # Format best frame for virtual camera
         virtual_frame = best_frame
-        virtual_frame = cv2.cvtColor(virtual_frame, cv2.COLOR_RGB2BGR)  # Convert frame colour for virtual webcam
         virtual_frame = cv2.resize(virtual_frame, (virtual_cam_width, virtual_cam_height))
+        virtual_frame = cv2.cvtColor(virtual_frame, cv2.COLOR_RGB2BGR)  # Convert frame colour for virtual webcam
 
-        # Sent frame to virtual camera
+        # Send frame to virtual camera
         virtual_cam.send(best_frame)
