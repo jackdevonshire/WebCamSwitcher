@@ -13,8 +13,8 @@ measurement_range = 25  # Amount of measurements to base camera switching decisi
 cooldown_seconds = 2  # For these seconds after switching, the camera will not switch again regardless of detections
 
 # Webcam Weightings
-favourite_webcam_id = 0  # Allows you to pick a webcam to favour
-favourite_webcam_weighting = 5  # The multiplication factor by which to favour the favourite webcam
+favourite_webcam_id = 1  # Allows you to pick a webcam to favour
+favourite_webcam_weighting = 2  # The multiplication factor by which to favour the favourite webcam
 
 # Virtual Camera Output
 virtual_cam_width = 1080
