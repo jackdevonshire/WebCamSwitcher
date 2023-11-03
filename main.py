@@ -12,10 +12,6 @@ config = {
     "measurement_range": 25,  # Amount of measurements used to determine which camera to select
     "cooldown_seconds": 3,  # After switching camera, block switching cameras for x seconds
 
-    # Webcam Weightings
-    "favourite_webcam_id": 1,  # A webcam you want to favour over others. e.g. your central screen
-    "favourite_webcam_weighting": 2,  # The factor by which to multiply the readings from the favourite webcam
-
     # Virtual Camera Output
     "virtual_cam_width": 1080,
     "virtual_cam_height": 1080,
@@ -40,12 +36,8 @@ def cooldown_timer():
 def initialise_webcams():
     webcams = []
     for webcamId in config["webcam_ids"]:
-        if webcamId == config["favourite_webcam_id"]:
-            camera = Camera("", webcamId, config["measurement_range"], config["favourite_webcam_weighting"])
-            webcams.append(camera)
-        else:
-            camera = Camera("", webcamId, config["measurement_range"], 1)
-            webcams.append(camera)
+        camera = Camera("", webcamId, config["measurement_range"])
+        webcams.append(camera)
 
     return webcams
 

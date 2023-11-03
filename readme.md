@@ -24,10 +24,6 @@ To start configuring the script, open the main.py file. There are various option
 
 `cooldown_Seconds` - This is another protection against the program randomly flickering between cameras. Each time a camera is switched out for another one, the script will not switch cameras again until a cooldown has run for this amount of seconds.
 
-`favourite_webcam_id` - This allows you to pick a single webcam to be the favourite (you will probably want this to be the one you are most likely to be looking at).
-
-`favourite_webcam_weighting` - This will let you set a multiplier weighting for the above favourite webcam. Setting this value to 1 will do nothing, setting it to 2 will double the weightings of the favourite camera, making it more likely to select that camera over other cameras. This is just another setting to help reduce flicking between cameras. If your favourite camera has zero measurements of you looking at it, the weighting will mean nothing. If you have a small measurement range, this weighting also won't have much of an impact. Fine tune it as needed, or just set it to 1 to keep things simple.
-
 `virtual_cam_width` - Self explanatory
 
 `virtual_cam_height` - Self explanatory
