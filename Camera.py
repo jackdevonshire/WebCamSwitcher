@@ -1,6 +1,8 @@
 import cv2
 from gaze_tracking import GazeTracking
+from config import config
 
+debug = False
 
 class Camera:
     def __init__(self, label, device_id, measurement_range):
@@ -17,6 +19,9 @@ class Camera:
         self.update_model()
 
     def get_last_frame(self):
+        if config["debug"]:
+            return self.gaze.annotated_frame()
+
         return self.last_frame
 
     def update_model(self):
