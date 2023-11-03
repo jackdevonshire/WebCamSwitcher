@@ -28,7 +28,7 @@ class Camera:
         _, frame = self.webcam_instance.read() # Get frame from camera
         try:
             self.gaze.refresh(frame) # Scan for gaze detection data
-            # Detect where user is looking. 0 = Left, 0.5 = Camera, 1 = Right
+            # Detect where user is looking. 0 = Right, 0.5 = Camera, 1 = Left
             horizontal_ratio = self.gaze.horizontal_ratio()
             amount_off_center = abs(0.5 - horizontal_ratio)
         except:
