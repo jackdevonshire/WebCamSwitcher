@@ -125,9 +125,19 @@ class GazeTracking(object):
             color = (0, 255, 0)
             x_left, y_left = self.pupil_left_coords()
             x_right, y_right = self.pupil_right_coords()
+
+            # Annotate Eyes
             cv2.line(frame, (x_left - 5, y_left), (x_left + 5, y_left), color)
             cv2.line(frame, (x_left, y_left - 5), (x_left, y_left + 5), color)
             cv2.line(frame, (x_right - 5, y_right), (x_right + 5, y_right), color)
             cv2.line(frame, (x_right, y_right - 5), (x_right, y_right + 5), color)
+
+            # Annotate Where Looking At
+            height, width, _ = frame.shape
+            looking_at_x = int(self.horizontal_ratio() * width)
+            looking_at_y = int(self.vertical_ratio() * height)
+            cv2.line(frame, (looking_at_x - 10, looking_at_y - 10), (looking_at_x + 10, looking_at_y + 10), (0, 0, 255),
+                     2)  # Diagonal from top-left to bottom-right
+            cv2.line(frame, (looking_at_x + 10, looking_at_y - 10), (looking_at_x - 10, looking_at_y + 10), (0, 0, 255), 2)  # Diagonal from top-right to bottom-left
 
         return frame
