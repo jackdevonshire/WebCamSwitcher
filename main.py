@@ -62,7 +62,8 @@ def main():
     with pyvirtualcam.Camera(width=config["virtual_cam_width"], height=config["virtual_cam_height"],
                              fps=config["virtual_cam_fps"]) as virtual_cam:
         while True:
-            best_detections = 0
+            # This is the furthest a user can be looking from a camera, as the range is 0 to 1, with 0.5 being centre
+            best_detections = 0.5*config["measurement_range"]
             start_cooldown = False
 
             if can_switch_cameras:
@@ -70,7 +71,7 @@ def main():
                 for webcam in webcams:
                     current_detections = webcam.update_model()
 
-                    if current_detections > best_detections:
+                    if current_detections < best_detections:
                         # If we're going to switch webcams, start a cooldown timer before switching again
                         if current_best_webcam != webcam:
                             start_cooldown = True
