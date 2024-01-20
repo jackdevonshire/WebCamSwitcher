@@ -14,6 +14,8 @@ class Camera:
         self.measurement_range = measurement_range
         self.measurements = [0.5]*measurement_range
 
+        self.centre_webcam = config["centre_webcam"] == device_id
+
         # Startup to ensure camera has a frame available
         self.last_frame = None
         self.update_model()
@@ -30,12 +32,16 @@ class Camera:
             self.gaze.refresh(frame) # Scan for gaze detection data
             # Detect where user is looking. 0 = Right, 0.5 = Camera, 1 = Left
             horizontal_ratio = self.gaze.horizontal_ratio()
-            amount_off_center = abs(0.5 - horizontal_ratio)
+            amount_off_centre = abs(0.5 - horizontal_ratio)
+
         except:
-            amount_off_center = 0.5
+            amount_off_centre = 1
+
+        if self.centre_webcam:
+            amount_off_centre += 0.1
 
         # Adjust current list of measurements to get average measurements
-        self.measurements.append(amount_off_center)
+        self.measurements.append(amount_off_centre)
 
         if len(self.measurements) > self.measurement_range:
             self.measurements.pop(0)
