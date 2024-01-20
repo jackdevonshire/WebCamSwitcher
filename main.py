@@ -52,20 +52,18 @@ def main():
             best_detections = 0.5*config["measurement_range"]
             start_cooldown = False
 
-            if can_switch_cameras:
-                # Select the best frame based on the webcam with the most positive detections for given measurement range
-                for webcam in webcams:
-                    current_detections = webcam.update_model()
+            # Select the best frame based on the webcam with the most positive detections for given measurement range
+            for webcam in webcams:
+                current_detections = webcam.update_model()
 
-                    if current_detections < best_detections:
-                        # If we're going to switch webcams, start a cooldown timer before switching again
-                        if current_best_webcam != webcam:
-                            start_cooldown = True
+                if can_switch_cameras and (current_detections < best_detections):
+                    # If we're going to switch webcams, start a cooldown timer before switching again
+                    if current_best_webcam != webcam:
+                        start_cooldown = True
 
-                        best_detections = current_detections
-                        current_best_webcam = webcam
-            else:
-                current_best_webcam.update_model()
+                    best_detections = current_detections
+                    current_best_webcam = webcam
+
 
             best_frame = current_best_webcam.get_last_frame()
             update_virtual_camera(virtual_cam, best_frame)
