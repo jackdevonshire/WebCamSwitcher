@@ -64,7 +64,6 @@ def main():
                     best_detections = current_detections
                     current_best_webcam = webcam
 
-
             best_frame = current_best_webcam.get_last_frame()
             update_virtual_camera(virtual_cam, best_frame)
 

@@ -20,9 +20,11 @@ To start configuring the script, open the main.py file. There are various option
 
 `webcam_ids` - This is a list of device ids for your webcams. Most likely starting from 0. The more cameras you have, the more likely the program is to run slower or require more compute resources. The time complexity will exponentially increase as more cameras are added (sorry, this isn't built for efficiency).
 
+`centre_webcam` - The ID of the centre webcam. This will give other webcams a slight measurement boost as the centre-most webcam generally has the best visibility
+
 `measurement_range` - This determines how many measurements are factored into deciding which webcamera to display at any given time. The larger this number, the more accurate the switching is likely to be, but it will also be slower. As a guide, if this is set to around 5, your cameras will be switching all over the place, but if it is set to 120, the script will probably be factoring in measurements that are 1 second old (not good).
 
-`cooldown_Seconds` - This is another protection against the program randomly flickering between cameras. Each time a camera is switched out for another one, the script will not switch cameras again until a cooldown has run for this amount of seconds.
+`cooldown_seconds` - This is another protection against the program randomly flickering between cameras. Each time a camera is switched out for another one, the script will not switch cameras again until a cooldown has run for this amount of seconds.
 
 `virtual_cam_width` - Self explanatory
 
